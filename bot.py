@@ -118,10 +118,16 @@ async def _reply_with_summary(update: Update, context: ContextTypes.DEFAULT_TYPE
     wc_after = word_count(summary)
     reduction = round(100 * (1 - wc_after / wc_before)) if wc_before else 0
 
-    await update.message.reply_text(
-        f"📝 *Summary* ({wc_before} → {wc_after} words, -{reduction}%):\n\n{summary}",
-        parse_mode=ParseMode.MARKDOWN,
-    )
+    try:
+        await update.message.reply_text(
+            f"📝 Summary ({wc_before} → {wc_after} words, -{reduction}%):\n\n{summary}"
+        )
+    except Exception:
+        logger.exception("Failed to send summary reply")
+        await update.message.reply_text(
+            "I generated a summary but couldn't send it as formatted — here it is as plain text:\n\n"
+            + summary
+        )
 
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
