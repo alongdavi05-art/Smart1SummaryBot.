@@ -110,11 +110,20 @@ async def _reply_with_summary(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     await update.message.chat.send_action("typing")
 
-    summary = summarize_text(
-        text,
-        sentence_count=settings["sentence_count"],
-        algorithm=settings["algorithm"],
-    )
+    try:
+        summary = summarize_text(
+            text,
+            sentence_count=settings["sentence_count"],
+            algorithm=settings["algorithm"],
+        )
+    except Exception:
+        logger.exception("Summarization failed")
+        await update.message.reply_text(
+            "⚠️ Something went wrong while summarizing that. Please try again — "
+            "if it keeps happening, try a shorter piece of text."
+        )
+        return
+
     wc_after = word_count(summary)
     reduction = round(100 * (1 - wc_after / wc_before)) if wc_before else 0
 
